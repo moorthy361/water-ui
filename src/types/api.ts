@@ -82,9 +82,9 @@ export interface AnomalyRecord {
 
 export interface RiskPrediction {
   current: RiskLevel;
-  sixHour: RiskLevel;
-  twelveHour: RiskLevel;
-  twentyFourHour: RiskLevel;
+  sixHour: RiskLevel | null;       // null when model lacks time-lagged training data
+  twelveHour: RiskLevel | null;    // null when model lacks time-lagged training data
+  twentyFourHour: RiskLevel | null;// null when model lacks time-lagged training data
   confidence: number;    // 0–1
   trend: DataPoint[];
   factors: RiskFactor[];
@@ -94,6 +94,18 @@ export interface RiskFactor {
   parameter: string;
   contribution: 'High' | 'Moderate' | 'Low';
   description: string;
+}
+
+// ─── Sensor Data Input ──────────────────────────────────────────────────────────
+
+export interface SensorDataInput {
+  timestamp?: string;        // ISO timestamp; backend assigns current time if omitted
+  ph?: number | null;
+  turbidity?: number | null;
+  temperature?: number | null;
+  tds?: number | null;
+  conductivity?: number | null;
+  dissolved_oxygen?: number | null;
 }
 
 // ─── Early Warnings ─────────────────────────────────────────────────────────────

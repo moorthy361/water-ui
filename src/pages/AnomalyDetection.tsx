@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
-import { AlertTriangle, Cpu, Search } from 'lucide-react';
+import { Cpu, Search } from 'lucide-react';
 import { useApiData } from '../hooks/useApiData';
-import { getAnomalies } from '../services/api';
+import { getAnomalies, getWaterQuality } from '../services/api';
 import { mockDashboardData, mockAnomalyRecords } from '../data/mockData';
 import TimeSeriesChart from '../components/charts/TimeSeriesChart';
 import StatusBadge from '../components/StatusBadge';
@@ -9,7 +9,7 @@ import LoadingState from '../components/LoadingState';
 import ErrorState from '../components/ErrorState';
 import EmptyState from '../components/EmptyState';
 import { parameterLabels, formatTimestamp } from '../utils/helpers';
-import type { AnomalyResult, AnomalyRecord, ParameterKey } from '../types/api';
+import type { AnomalyResult, AnomalyRecord, ParameterKey, SensorParameters } from '../types/api';
 
 const paramKeys: ParameterKey[] = ['ph', 'turbidity', 'temperature', 'tds', 'conductivity'];
 
@@ -25,7 +25,8 @@ export default function AnomalyDetection() {
   const [filterParam, setFilterParam] = useState<string>('all');
   const [selectedAnomaly, setSelectedAnomaly] = useState<AnomalyRecord | null>(null);
 
-  const fetchFn = useCallback(
+  // ── Anomaly records ────────────────────────────────────────────────────────
+  const anomalyFetchFn = useCallback(
     () => getAnomalies({ parameter: filterParam === 'all' ? undefined : filterParam }),
     [filterParam]
   );
@@ -43,8 +44,16 @@ export default function AnomalyDetection() {
   };
 
   const { data, loading, error, refetch } = useApiData<{ summary: AnomalyResult; records: { data: AnomalyRecord[] } }>({
-    fetchFn,
-    mockData: mockData,
+    fetchFn: anomalyFetchFn,
+    mockData,
+  });
+
+  // ── Water quality parameters for the chart ─────────────────────────────────
+  // Fetch the parameter history so the chart can display a real sensor series.
+  const wqFetchFn = useCallback(() => getWaterQuality(), []);
+  const { data: wqData } = useApiData<SensorParameters>({
+    fetchFn: wqFetchFn,
+    mockData: mockDashboardData.parameters,
   });
 
   if (loading && !data) {
@@ -73,9 +82,10 @@ export default function AnomalyDetection() {
     value: r.value,
   }));
 
-  // Use turbidity history as the base series for the chart
+  // Use backend parameter history for chart; fall back to mock if not yet loaded
   const chartParam = filterParam === 'all' ? 'turbidity' : filterParam as ParameterKey;
-  const chartHistory = mockDashboardData.parameters[chartParam]?.history || [];
+  const chartHistory = wqData?.[chartParam]?.history ?? [];
+  const chartUnit = wqData?.[chartParam]?.unit ?? '';
 
   return (
     <div className="space-y-6">
@@ -147,17 +157,27 @@ export default function AnomalyDetection() {
       {/* ─── B. Timeline Chart ────────────────────────────── */}
       <div className="glass-card p-5">
         <h3 className="text-sm font-medium text-slate-300 mb-3">Anomaly Timeline</h3>
-        <TimeSeriesChart
-          data={chartHistory}
-          anomalies={anomalyPoints}
-          color={paramColors[chartParam]}
-          unit={mockDashboardData.parameters[chartParam]?.unit || ''}
-          label={parameterLabels[chartParam]}
-          height={300}
-        />
-        <p className="text-[10px] text-slate-600 mt-2">
-          Red dots indicate anomalies detected by the backend Isolation Forest model.
-        </p>
+        {chartHistory.length > 0 ? (
+          <>
+            <TimeSeriesChart
+              data={chartHistory}
+              anomalies={anomalyPoints}
+              color={paramColors[chartParam]}
+              unit={chartUnit}
+              label={parameterLabels[chartParam]}
+              height={300}
+            />
+            <p className="text-[10px] text-slate-600 mt-2">
+              Red dots indicate anomalies detected by the backend Isolation Forest model.
+            </p>
+          </>
+        ) : (
+          <div className="flex items-center justify-center h-[300px]">
+            <p className="text-xs text-slate-500">
+              No sensor history available. Send readings via <code className="text-slate-400">POST /api/sensors/data</code> to populate the chart.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ─── C. Anomaly Table ─────────────────────────────── */}
@@ -189,7 +209,7 @@ export default function AnomalyDetection() {
                   >
                     <td className="py-3 px-3 text-slate-300">{formatTimestamp(record.timestamp)}</td>
                     <td className="py-3 px-3 text-slate-300">{parameterLabels[record.parameter]}</td>
-                    <td className="py-3 px-3 text-white font-medium">{record.value}</td>
+                    <td className="py-3 px-3 text-white font-medium">{record.value ?? 'N/A'}</td>
                     <td className="py-3 px-3">
                       <span className={`font-medium ${record.anomalyScore > 0.8 ? 'text-red-400' : record.anomalyScore > 0.6 ? 'text-amber-400' : 'text-slate-300'}`}>
                         {record.anomalyScore.toFixed(2)}

@@ -58,15 +58,25 @@ export default function RiskPrediction() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {riskSlots.map(({ key, label, icon: Icon }) => {
           const level = data[key];
+          const isAvailable = level !== null && level !== undefined;
           return (
-            <div key={key} className={`glass-card p-5 border ${getRiskBg(level)}`}>
+            <div key={key} className={`glass-card p-5 border ${isAvailable ? getRiskBg(level) : 'border-white/5'}`}>
               <div className="flex items-center gap-2 mb-3">
-                <Icon className={`w-4 h-4 ${getRiskColor(level)}`} />
+                <Icon className={`w-4 h-4 ${isAvailable ? getRiskColor(level) : 'text-slate-600'}`} />
                 <span className="text-xs text-slate-400">{label}</span>
               </div>
-              <p className={`text-2xl font-bold ${getRiskColor(level)}`}>
-                {level.toUpperCase()}
-              </p>
+              {isAvailable ? (
+                <p className={`text-2xl font-bold ${getRiskColor(level)}`}>
+                  {level!.toUpperCase()}
+                </p>
+              ) : (
+                <div>
+                  <p className="text-base font-medium text-slate-600">N/A</p>
+                  <p className="text-[10px] text-slate-700 mt-1">
+                    Future prediction unavailable
+                  </p>
+                </div>
+              )}
             </div>
           );
         })}

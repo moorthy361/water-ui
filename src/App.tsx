@@ -1,11 +1,20 @@
-import { lazy, Suspense, useState, useCallback } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { lazy, Suspense, useCallback } from 'react';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import LoadingState from './components/LoadingState';
 import { useApiData } from './hooks/useApiData';
 import { getDashboardData } from './services/api';
 import { mockDashboardData } from './data/mockData';
 import type { DashboardData } from './types/api';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import PublicHome from './pages/PublicHome';
+import Features from './pages/Features';
+import About from './pages/About';
+import HowItWorks from './pages/HowItWorks';
+import Contact from './pages/Contact';
 
 // Lazy-load pages for performance
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -25,8 +34,7 @@ function PageLoader() {
   );
 }
 
-export default function App() {
-  // Top-level connection check to pass to layout
+function PrivateLayout() {
   const fetchFn = useCallback(() => getDashboardData(), []);
   const { loading, lastUpdated, isUsingMock, refetch } = useApiData<DashboardData>({
     fetchFn,
@@ -35,29 +43,42 @@ export default function App() {
   });
 
   const isConnected = !isUsingMock;
+  return <MainLayout
+    isConnected={isConnected}
+    isUsingMock={isUsingMock}
+    lastUpdated={lastUpdated}
+    onRefresh={refetch}
+    loading={loading}
+  />;
+}
 
+export default function App() {
   return (
     <Routes>
-      <Route
-        element={
-          <MainLayout
-            isConnected={isConnected}
-            isUsingMock={isUsingMock}
-            lastUpdated={lastUpdated}
-            onRefresh={refetch}
-            loading={loading}
-          />
-        }
-      >
-        <Route path="/" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+      <Route path="/" element={<PublicHome />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/features" element={<Features />} />
+      <Route path="/how-it-works" element={<HowItWorks />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/register" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route element={<ProtectedRoute />}>
+      <Route element={<PrivateLayout />}>
+        <Route path="/private-dashboard" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+        <Route path="/dashboard" element={<Navigate to="/private-dashboard" replace />} />
         <Route path="/water-quality" element={<Suspense fallback={<PageLoader />}><WaterQuality /></Suspense>} />
         <Route path="/anomaly-detection" element={<Suspense fallback={<PageLoader />}><AnomalyDetection /></Suspense>} />
         <Route path="/risk-prediction" element={<Suspense fallback={<PageLoader />}><RiskPrediction /></Suspense>} />
         <Route path="/early-warnings" element={<Suspense fallback={<PageLoader />}><EarlyWarnings /></Suspense>} />
         <Route path="/sensor-health" element={<Suspense fallback={<PageLoader />}><SensorHealth /></Suspense>} />
         <Route path="/historical-data" element={<Suspense fallback={<PageLoader />}><HistoricalData /></Suspense>} />
+        <Route path="/history" element={<Navigate to="/historical-data" replace />} />
         <Route path="/settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
       </Route>
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

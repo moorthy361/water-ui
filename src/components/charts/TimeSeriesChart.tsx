@@ -59,7 +59,7 @@ export default function TimeSeriesChart({
             color: '#e2e8f0',
           }}
           labelFormatter={(v) => formatTimeOnly(v as string)}
-          formatter={(value: number) => [`${value} ${unit}`, label || 'Value']}
+          formatter={(value) => [`${value ?? ''} ${unit}`, label || 'Value']}
         />
         <Area
           type="monotone"

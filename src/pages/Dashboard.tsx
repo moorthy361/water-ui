@@ -11,7 +11,6 @@ import ErrorState from '../components/ErrorState';
 import { useApiData } from '../hooks/useApiData';
 import { getDashboardData } from '../services/api';
 import { mockDashboardData } from '../data/mockData';
-import { parameterLabels } from '../utils/helpers';
 import type { DashboardData, ParameterKey } from '../types/api';
 
 const paramKeys: ParameterKey[] = ['ph', 'turbidity', 'temperature', 'tds', 'conductivity'];
@@ -96,23 +95,6 @@ export default function Dashboard() {
       </div>
 
       {/* ─── Tech Stack Footer ────────────────────────────────── */}
-      <div className="flex flex-wrap gap-2 pt-2">
-        {[
-          'Anomaly: Isolation Forest',
-          'Risk: Random Forest',
-          'Health: Rule-Based + Statistical',
-          'Backend: Python + Pandas + NumPy',
-          'Database: PostgreSQL',
-          'Frontend: React + Tailwind CSS',
-        ].map((label) => (
-          <span
-            key={label}
-            className="px-2.5 py-1 text-[10px] text-slate-500 bg-white/[0.02] border border-white/5 rounded-full"
-          >
-            {label}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }

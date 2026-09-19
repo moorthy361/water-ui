@@ -1,4 +1,6 @@
-import { RefreshCw, Bell, User, Menu, Wifi, WifiOff } from 'lucide-react';
+import { RefreshCw, Bell, User, Menu, Wifi, WifiOff, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { formatRelativeTime } from '../utils/helpers';
 
 interface HeaderProps {
@@ -18,6 +20,15 @@ export default function Header({
   onRefresh,
   loading,
 }: HeaderProps) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate('/', { replace: true });
+    }
+  };
   return (
     <header className="sticky top-0 z-30 bg-navy-950/80 backdrop-blur-xl border-b border-white/5">
       <div className="flex items-center justify-between px-4 md:px-6 h-14">
@@ -48,7 +59,7 @@ export default function Header({
             ) : (
               <>
                 <WifiOff className="w-3 h-3 text-amber-400" />
-                <span className="text-amber-400">{isUsingMock ? 'Dev Mode' : 'Disconnected'}</span>
+                <span className="text-amber-400">{isUsingMock ? 'Demo Data' : 'Backend Offline'}</span>
               </>
             )}
           </div>
@@ -79,13 +90,9 @@ export default function Header({
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
           </button>
 
-          {/* User */}
-          <button
-            className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
-            aria-label="User profile"
-          >
-            <User className="w-4 h-4" />
-          </button>
+          <div className="hidden sm:block text-right leading-tight"><p className="max-w-28 truncate text-xs font-medium text-slate-200">{user?.name}</p><p className="max-w-28 truncate text-[10px] text-slate-500">{user?.email}</p></div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-700 text-slate-300"><User className="w-4 h-4" /></div>
+          <button onClick={() => void handleLogout()} className="p-2 text-slate-400 hover:text-red-300 rounded-lg hover:bg-white/5 transition-colors" aria-label="Log out"><LogOut className="w-4 h-4" /></button>
         </div>
       </div>
     </header>

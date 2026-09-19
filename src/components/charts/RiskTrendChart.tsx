@@ -45,7 +45,7 @@ export default function RiskTrendChart({ data, height = 280 }: RiskTrendChartPro
             color: '#e2e8f0',
           }}
           labelFormatter={(v) => formatTimeOnly(v as string)}
-          formatter={(value: number) => [`${value}%`, 'Risk Score']}
+          formatter={(value) => [`${value ?? ''}%`, 'Risk Score']}
         />
         {/* Risk level reference lines */}
         <ReferenceLine y={25} stroke="#34d399" strokeDasharray="4 4" strokeOpacity={0.4} />

@@ -49,24 +49,10 @@ export default function HistoricalData() {
   if (error && !rawData) return <ErrorState message={error} onRetry={refetch} />;
   if (!rawData) return null;
 
-  // Client-side filtering/sorting/pagination for mock data
-  let records = [...rawData.data];
-
-  // Sort
-  records.sort((a, b) => {
-    const aVal = a[sortBy as keyof HistoricalRecord];
-    const bVal = b[sortBy as keyof HistoricalRecord];
-    if (typeof aVal === 'number' && typeof bVal === 'number') {
-      return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
-    }
-    return sortOrder === 'asc'
-      ? String(aVal).localeCompare(String(bVal))
-      : String(bVal).localeCompare(String(aVal));
-  });
-
-  // Paginate
-  const totalPages = Math.ceil(records.length / PAGE_SIZE);
-  const paginatedRecords = records.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // Backend handles sorting and pagination — use the response directly
+  const records = rawData.data;
+  const totalPages = rawData.totalPages ?? Math.ceil(rawData.total / PAGE_SIZE);
+  const paginatedRecords = records;
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -196,7 +182,7 @@ export default function HistoricalData() {
             {/* Pagination */}
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
               <p className="text-xs text-slate-500">
-                Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, records.length)} of {records.length} records
+                Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, rawData.total)} of {rawData.total} records
               </p>
               <div className="flex items-center gap-1">
                 <button

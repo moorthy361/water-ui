@@ -242,24 +242,6 @@ export default function Settings() {
       </div>
 
       {/* ─── Tech Stack Info ──────────────────────────────── */}
-      <div className="glass-card p-5">
-        <h2 className="text-sm font-semibold text-white mb-4">System Information</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          {[
-            { label: 'Frontend', value: 'React + Tailwind CSS' },
-            { label: 'Anomaly Detection', value: 'Isolation Forest (Backend)' },
-            { label: 'Risk Prediction', value: 'Random Forest (Backend)' },
-            { label: 'Sensor Health', value: 'Rule-Based + Statistical Analysis' },
-            { label: 'Data Processing', value: 'Python + Pandas + NumPy' },
-            { label: 'Database', value: 'PostgreSQL' },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex items-center justify-between bg-white/[0.03] rounded-lg px-3 py-2.5">
-              <span className="text-slate-500">{label}</span>
-              <span className="text-slate-300">{value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

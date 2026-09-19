@@ -13,7 +13,10 @@ import {
   User,
   X,
   Waves,
+  LogOut,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   open: boolean;
@@ -34,6 +37,15 @@ const navItems = [
 
 export default function Sidebar({ open, onClose, isConnected }: SidebarProps) {
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate('/', { replace: true });
+    }
+  };
 
   return (
     <>
@@ -129,10 +141,11 @@ export default function Sidebar({ open, onClose, isConnected }: SidebarProps) {
               <User className="w-4 h-4 text-slate-400" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-medium text-white truncate">Operator</p>
-              <p className="text-[10px] text-slate-500">Admin</p>
+              <p className="text-xs font-medium text-white truncate">{user?.name}</p>
+              <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
             </div>
           </div>
+          <button onClick={() => void handleLogout()} className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-slate-400 transition-colors hover:bg-white/5 hover:text-red-300"><LogOut className="h-3.5 w-3.5" />Log out</button>
         </div>
       </aside>
     </>

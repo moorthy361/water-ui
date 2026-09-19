@@ -1,5 +1,5 @@
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
-import type { DataPoint } from '../types/api';
+import type { DataPoint } from '../../types/api';
 
 interface SparklineChartProps {
   data: DataPoint[];
